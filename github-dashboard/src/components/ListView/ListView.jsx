@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import Filters from './Filters.jsx';
 import RepoList from './RepoList.jsx';
 import IssueList from './IssueList.jsx';
@@ -33,7 +33,14 @@ export default function ListView({ data, loading, mode = 'full' }) {
   const [semanticLoading, setSemanticLoading] = useState(false);
   const [semanticError, setSemanticError] = useState('');
   const isCompact = mode === 'compact';
+  const [filtersOpen, setFiltersOpen] = useState(() => !isCompact);
   const activeTab = isCompact ? 'repos' : tab;
+
+  useEffect(() => {
+    if (isCompact) {
+      setFiltersOpen(false);
+    }
+  }, [isCompact]);
 
   const repoFilters = useFilters({
     search: '',
@@ -171,6 +178,10 @@ export default function ListView({ data, loading, mode = 'full' }) {
     }
   };
 
+  const handleFiltersToggle = () => {
+    setFiltersOpen((prev) => !prev);
+  };
+
   return (
     <section className={list-view }>
       <div className="semantic-search">
@@ -249,38 +260,46 @@ export default function ListView({ data, loading, mode = 'full' }) {
               </button>
             ))}
           </div>
-        ) : null}
+        ) : (
+          <div className="section-actions">
+            <button className="ghost-button" type="button" onClick={handleFiltersToggle}>
+              {filtersOpen ? 'フィルターを閉じる' : 'フィルターを開く'}
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="list-layout">
-        <aside className="filters-panel">
-          {isCompact || activeTab === 'repos' ? (
-            <Filters
-              mode="repos"
-              filters={repoFilters.filters}
-              options={{
-                languages,
-                visibility: ['all', 'public', 'private'],
-                sort: REPO_SORT,
-              }}
-              onChange={repoFilters.updateFilters}
-              view={repoView}
-              onViewChange={setRepoView}
-            />
-          ) : (
-            <Filters
-              mode="work"
-              filters={workFilters.filters}
-              options={{
-                status: ['all', 'open', 'closed', 'merged'],
-                repos: repoNames,
-                assignees,
-                sort: WORK_SORT,
-              }}
-              onChange={workFilters.updateFilters}
-            />
-          )}
-        </aside>
+      <div className={list-layout }>
+        {(!isCompact || filtersOpen) && (
+          <aside className="filters-panel">
+            {isCompact || activeTab === 'repos' ? (
+              <Filters
+                mode="repos"
+                filters={repoFilters.filters}
+                options={{
+                  languages,
+                  visibility: ['all', 'public', 'private'],
+                  sort: REPO_SORT,
+                }}
+                onChange={repoFilters.updateFilters}
+                view={repoView}
+                onViewChange={setRepoView}
+              />
+            ) : (
+              <Filters
+                mode="work"
+                filters={workFilters.filters}
+                options={{
+                  status: ['all', 'open', 'closed', 'merged'],
+                  repos: repoNames,
+                  assignees,
+                  sort: WORK_SORT,
+                }}
+                onChange={workFilters.updateFilters}
+              />
+            )}
+          </aside>
+        )}
 
         <div className="list-content">
           {loading ? (

@@ -1292,3 +1292,11 @@
 .list-view.compact .view-header {
   margin-top: 8px;
 }
+.list-layout.single {
+  grid-template-columns: 1fr;
+}
+
+.list-view.compact .filters-panel {
+  position: sticky;
+  top: 16px;
+}
