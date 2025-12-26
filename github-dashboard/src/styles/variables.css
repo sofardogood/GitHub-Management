@@ -1,0 +1,23 @@
+﻿:root {
+  color-scheme: light;
+  --font-display: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
+  --font-body: 'IBM Plex Sans', 'Space Grotesk', sans-serif;
+  --color-bg: #f6f6f6;
+  --color-bg-soft: #ededed;
+  --color-surface: #ffffff;
+  --color-surface-strong: #f1f1f1;
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-border-strong: rgba(0, 0, 0, 0.2);
+  --color-primary: #111111;
+  --color-accent: #2b2b2b;
+  --color-info: #1f1f1f;
+  --color-success: #111111;
+  --color-muted: #616161;
+  --color-danger: #2f2f2f;
+  --shadow-elevated: 0 14px 30px rgba(0, 0, 0, 0.08);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --transition-fast: 180ms ease;
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}

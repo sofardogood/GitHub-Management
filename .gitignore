@@ -1,0 +1,30 @@
+# Node
+node_modules/
+
+# Builds
+dist/
+.next/
+
+# Env
+.env
+.env.local
+
+# Local data snapshots
+github-dashboard/data/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev.out.log
+dev.err.log
+
+# Cache
+.cache/
+
+# Vite
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db

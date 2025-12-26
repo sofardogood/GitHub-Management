@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Repo {
+  id           Int              @id
+  name         String
+  fullName     String           @unique
+  owner        String
+  isOwner      Boolean
+  isPrivate    Boolean
+  visibility   String
+  description  String
+  language     String
+  stars        Int
+  forks        Int
+  updatedAt    DateTime
+  createdAt    DateTime
+  url          String
+  issues       Issue[]
+  pullRequests PullRequest[]
+  commits      Commit[]
+  dependencies RepoDependency[]
+  tags         RepoTag[]
+  timelineEvents TimelineEvent[]
+}
+
+model Issue {
+  id           Int     @id
+  number       Int
+  repoFullName String
+  repoId       Int?
+  repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
+  title        String
+  state        String
+  labels       Json
+  assignee     Json?
+  author       Json?
+  createdAt    DateTime
+  updatedAt    DateTime
+  closedAt     DateTime?
+  url          String
+}
+
+model PullRequest {
+  id           Int     @id
+  number       Int
+  repoFullName String
+  repoId       Int?
+  repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
+  title        String
+  state        String
+  labels       Json
+  assignee     Json?
+  author       Json?
+  createdAt    DateTime
+  updatedAt    DateTime
+  closedAt     DateTime?
+  mergedAt     DateTime?
+  url          String
+}
+
+model Commit {
+  repoFullName String
+  sha          String
+  repoId       Int?
+  repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
+  message      String
+  author       Json?
+  date         DateTime
+  url          String
+
+  @@id([repoFullName, sha])
+}
+
+model TimelineEvent {
+  id           String  @id
+  type         String
+  repoFullName String
+  repoId       Int?
+  repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
+  title        String
+  actor        String
+  date         DateTime
+  url          String
+}
+
+model RepoDependency {
+  id     Int   @id @default(autoincrement())
+  repoId Int
+  name   String
+  source String?
+  repo   Repo  @relation(fields: [repoId], references: [id], onDelete: Cascade)
+
+  @@unique([repoId, name])
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String    @unique
+  repos RepoTag[]
+}
+
+model RepoTag {
+  repoId Int
+  tagId  Int
+  repo   Repo @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([repoId, tagId])
+}
+
+model AutomationRule {
+  id         Int      @id @default(autoincrement())
+  name       String
+  enabled    Boolean  @default(true)
+  scope      String
+  conditions Json
+  actions    Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  runs       RuleRun[]
+}
+
+model RuleRun {
+  id        Int      @id @default(autoincrement())
+  ruleId    Int
+  status    String
+  dryRun    Boolean  @default(true)
+  message   String?
+  createdAt DateTime @default(now())
+  rule      AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+}
+
+model SyncRun {
+  id         Int      @id @default(autoincrement())
+  status     String
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  stats      Json?
+  error      String?
+}
