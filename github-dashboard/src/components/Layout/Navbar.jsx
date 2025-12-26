@@ -35,7 +35,7 @@ export default function Navbar({ status, onRefresh }) {
         ))}
       </nav>
       <div className="top-actions">
-        <span className={status-pill }>
+        <span className={`status-pill ${error ? 'error' : loading ? 'loading' : 'ok'}`}>
           {statusLabel}
         </span>
         <button className="ghost-button" onClick={onRefresh} type="button">

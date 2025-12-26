@@ -183,7 +183,7 @@ export default function ListView({ data, loading, mode = 'full' }) {
   };
 
   return (
-    <section className={list-view }>
+    <section className={`list-view ${isCompact ? 'compact' : ''}`}>
       <div className="semantic-search">
         <div>
           <h3>目的検索（意味検索）</h3>
@@ -225,8 +225,8 @@ export default function ListView({ data, loading, mode = 'full' }) {
                 <div className="repo-footer">
                   <span className="semantic-score">
                     {semanticMode === 'semantic'
-                      ? 一致度 %
-                      : 一致スコア }
+                      ? `一致度 ${Math.round(item.score * 100)}%`
+                      : `一致スコア ${item.score}`}
                   </span>
                   <a href={item.repo.url} target="_blank" rel="noreferrer">
                     開く
@@ -269,7 +269,7 @@ export default function ListView({ data, loading, mode = 'full' }) {
         )}
       </div>
 
-      <div className={list-layout }>
+      <div className={`list-layout ${isCompact && !filtersOpen ? 'single' : ''}`}>
         {(!isCompact || filtersOpen) && (
           <aside className="filters-panel">
             {isCompact || activeTab === 'repos' ? (
