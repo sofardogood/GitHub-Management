@@ -1,7 +1,8 @@
 ﻿const fs = require('fs');
 const path = require('path');
 
-const cacheDir = path.resolve(__dirname, '..', '..', '.cache');
+const os = require('os');
+const cacheDir = path.join(os.tmpdir(), 'github-management-cache');
 
 function ensureCacheDir() {
   if (!fs.existsSync(cacheDir)) {
