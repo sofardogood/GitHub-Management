@@ -172,134 +172,138 @@ export default async function handler(req, res) {
     const timeline = buildTimeline(issues, prs, commits);
     const snapshot = buildSnapshot(repos, issues, prs, commits, timeline, contexts);
 
-    /*
-        if (prisma) {
-          try {
-            const run = await prisma.syncRun.create({ data: { status: 'running' } });
-    
-            await upsertRepos(repos);
-            await prisma.repo.deleteMany({
-              where: { id: { notIn: repos.map((repo) => repo.id) } },
-            });
-    
-            await prisma.$transaction([
-              prisma.issue.deleteMany(),
-              prisma.pullRequest.deleteMany(),
-              prisma.commit.deleteMany(),
-              prisma.timelineEvent.deleteMany(),
-              prisma.repoDependency.deleteMany(),
-            ]);
-    
-            if (issues.length) {
-              await prisma.issue.createMany({
-                data: issues.map((issue) => ({
-                  id: issue.id,
-                  number: issue.number,
-                  repoFullName: issue.repo,
-                  repoId: repoIdMap.get(issue.repo) || null,
-                  title: issue.title,
-                  state: issue.state,
-                  labels: issue.labels || [],
-                  assignee: issue.assignee,
-                  author: issue.author,
-                  createdAt: toDate(issue.createdAt),
-                  updatedAt: toDate(issue.updatedAt),
-                  closedAt: toDate(issue.closedAt),
-                  url: issue.url,
-                })),
-              });
-            }
-    
-            if (prs.length) {
-              await prisma.pullRequest.createMany({
-                data: prs.map((pr) => ({
-                  id: pr.id,
-                  number: pr.number,
-                  repoFullName: pr.repo,
-                  repoId: repoIdMap.get(pr.repo) || null,
-                  title: pr.title,
-                  state: pr.state,
-                  labels: pr.labels || [],
-                  assignee: pr.assignee,
-                  author: pr.author,
-                  createdAt: toDate(pr.createdAt),
-                  updatedAt: toDate(pr.updatedAt),
-                  closedAt: toDate(pr.closedAt),
-                  mergedAt: toDate(pr.mergedAt),
-                  url: pr.url,
-                })),
-              });
-            }
-    
-            if (commits.length) {
-              await prisma.commit.createMany({
-                data: commits.map((commit) => ({
-                  repoFullName: commit.repo,
-                  sha: commit.sha,
-                  repoId: repoIdMap.get(commit.repo) || null,
-                  message: commit.message,
-                  author: commit.author,
-                  date: toDate(commit.date),
-                  url: commit.url,
-                })),
-              });
-            }
-    
-            if (timeline.length) {
-              await prisma.timelineEvent.createMany({
-                data: timeline.map((event) => ({
-                  id: event.id,
-                  type: event.type,
-                  repoFullName: event.repo,
-                  repoId: repoIdMap.get(event.repo) || null,
-                  title: event.title,
-                  actor: event.actor,
-                  date: toDate(event.date),
-                  url: event.url,
-                })),
-              });
-            }
-    
-            const dependencies = [];
-            contexts.forEach((context) => {
-              const repoId = repoIdMap.get(context.fullName);
-              if (!repoId) return;
-              (context.dependencies || []).forEach((name) => {
-                dependencies.push({ repoId, name });
-              });
-            });
-            if (dependencies.length) {
-              await prisma.repoDependency.createMany({
-                data: dependencies,
-                skipDuplicates: true,
-              });
-            }
-    
-            const stats = {
-              repos: repos.length,
-              issues: issues.length,
-              prs: prs.length,
-              commits: commits.length,
-              timeline: timeline.length,
-              dependencies: snapshot.dependencies.length,
-            };
-    
-            await prisma.syncRun.update({
-              where: { id: run.id },
-              data: {
-                status: 'success',
-                finishedAt: new Date(),
-                stats,
-              },
-            });
-    
-            res.status(200).json({ ok: true, mode: 'db', stats });
-            return;
-          } catch (error) {
-            console.warn(`DB sync failed: ${error.message}`);
-          }
+    if (prisma) {
+      try {
+        const run = await prisma.syncRun.create({ data: { status: 'running' } });
+
+        await upsertRepos(repos);
+        // Note: We don't delete repos not in fetch to confirm safety, or valid logic? 
+        // Original code:
+        /*
+        await prisma.repo.deleteMany({
+          where: { id: { notIn: repos.map((repo) => repo.id) } },
+        });
+        */
+
+        // Clear sub-tables to re-insert (Simple Sync)
+        await prisma.$transaction([
+          prisma.issue.deleteMany(),
+          prisma.pullRequest.deleteMany(),
+          prisma.commit.deleteMany(),
+          prisma.timelineEvent.deleteMany(),
+          prisma.repoDependency.deleteMany(),
+        ]);
+
+        if (issues.length) {
+          await prisma.issue.createMany({
+            data: issues.map((issue) => ({
+              id: issue.id,
+              number: issue.number,
+              repoFullName: issue.repo,
+              repoId: repoIdMap.get(issue.repo) || null,
+              title: issue.title,
+              state: issue.state,
+              labels: issue.labels || [],
+              assignee: issue.assignee,
+              author: issue.author,
+              createdAt: toDate(issue.createdAt),
+              updatedAt: toDate(issue.updatedAt),
+              closedAt: toDate(issue.closedAt),
+              url: issue.url,
+            })),
+          });
         }
-    */
+
+        if (prs.length) {
+          await prisma.pullRequest.createMany({
+            data: prs.map((pr) => ({
+              id: pr.id,
+              number: pr.number,
+              repoFullName: pr.repo,
+              repoId: repoIdMap.get(pr.repo) || null,
+              title: pr.title,
+              state: pr.state,
+              labels: pr.labels || [],
+              assignee: pr.assignee,
+              author: pr.author,
+              createdAt: toDate(pr.createdAt),
+              updatedAt: toDate(pr.updatedAt),
+              closedAt: toDate(pr.closedAt),
+              mergedAt: toDate(pr.mergedAt),
+              url: pr.url,
+            })),
+          });
+        }
+
+        if (commits.length) {
+          await prisma.commit.createMany({
+            data: commits.map((commit) => ({
+              repoFullName: commit.repo,
+              sha: commit.sha,
+              repoId: repoIdMap.get(commit.repo) || null,
+              message: commit.message,
+              author: commit.author,
+              date: toDate(commit.date),
+              url: commit.url,
+            })),
+          });
+        }
+
+        if (timeline.length) {
+          await prisma.timelineEvent.createMany({
+            data: timeline.map((event) => ({
+              id: event.id,
+              type: event.type,
+              repoFullName: event.repo,
+              repoId: repoIdMap.get(event.repo) || null,
+              title: event.title,
+              actor: event.actor,
+              date: toDate(event.date),
+              url: event.url,
+            })),
+          });
+        }
+
+        const dependencies = [];
+        contexts.forEach((context) => {
+          const repoId = repoIdMap.get(context.fullName);
+          if (!repoId) return;
+          (context.dependencies || []).forEach((name) => {
+            dependencies.push({ repoId, name });
+          });
+        });
+        if (dependencies.length) {
+          await prisma.repoDependency.createMany({
+            data: dependencies,
+            skipDuplicates: true,
+          });
+        }
+
+        const stats = {
+          repos: repos.length,
+          issues: issues.length,
+          prs: prs.length,
+          commits: commits.length,
+          timeline: timeline.length,
+          dependencies: snapshot.dependencies.length,
+        };
+
+        await prisma.syncRun.update({
+          where: { id: run.id },
+          data: {
+            status: 'success',
+            finishedAt: new Date(),
+            stats,
+          },
+        });
+
+        res.status(200).json({ ok: true, mode: 'db', stats });
+        return;
+      } catch (error) {
+        console.warn(`DB sync failed: ${error.message}`);
+        // Fallthrough to file mode
+      }
+    }
 
     const stats = {
       repos: repos.length,

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 export default function RepoActivityCard({ repo, activity }) {
   const lastEvent = activity.length > 0 ? activity[0] : null;
   const [expanded, setExpanded] = useState(false);
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState(repo.summary || null);
   const [loading, setLoading] = useState(false);
 
   const handleExpand = async () => {

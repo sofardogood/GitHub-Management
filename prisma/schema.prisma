@@ -16,6 +16,7 @@ model Repo {
   isPrivate    Boolean
   visibility   String
   description  String
+  summary      String?   @db.Text
   language     String
   stars        Int
   forks        Int

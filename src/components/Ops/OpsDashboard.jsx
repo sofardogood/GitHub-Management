@@ -42,6 +42,23 @@ export default function OpsDashboard() {
           >
             再計算
           </button>
+          <button
+            className="ghost-button"
+            type="button"
+            style={{ marginLeft: '8px' }}
+            onClick={async () => {
+              if (!confirm('AIによる要約生成を開始しますか？')) return;
+              try {
+                const res = await fetch('/api/ai/summarize', { method: 'POST' });
+                const data = await res.json();
+                alert(`処理完了: ${data.processed}件の要約を生成しました。`);
+              } catch (e) {
+                alert('エラーが発生しました');
+              }
+            }}
+          >
+            AI要約
+          </button>
         </div>
       </div>
 

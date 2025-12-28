@@ -48,6 +48,22 @@ export default async function handler(req, res) {
         const response = await result.response;
         const summary = response.text();
 
+        // Save to DB (if prisma available)
+        try {
+            const prisma = require('../../lib/prisma.js');
+            if (prisma) {
+                // We need repo ID. fetchRepos might not return ID in this context easily unless we query DB.
+                // But we have 'repo' string "owner/name".
+                // Let's try to update by fullName
+                await prisma.repo.update({
+                    where: { fullName: repo },
+                    data: { summary: summary },
+                });
+            }
+        } catch (e) {
+            console.warn('Failed to save summary to DB:', e.message);
+        }
+
         res.status(200).json({ summary });
     } catch (error) {
         console.error('AI Summary Error:', error);
