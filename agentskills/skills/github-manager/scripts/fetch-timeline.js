@@ -1,4 +1,4 @@
-const { fetchIssues } = require('./fetch-issues');
+﻿const { fetchIssues } = require('./fetch-issues');
 const { fetchPullRequests } = require('./fetch-prs');
 const { fetchCommits } = require('./fetch-commits');
 const { withCache } = require('./utils/cache');
@@ -118,3 +118,4 @@ if (require.main === module) {
 module.exports = {
   fetchTimeline,
 };
+

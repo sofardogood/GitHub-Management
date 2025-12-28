@@ -1,4 +1,4 @@
-const { fetchRepos } = require('./fetch-repos');
+﻿const { fetchRepos } = require('./fetch-repos');
 const { fetchIssues } = require('./fetch-issues');
 const { fetchPullRequests } = require('./fetch-prs');
 const { fetchCommits } = require('./fetch-commits');
@@ -112,3 +112,4 @@ if (require.main === module) {
 module.exports = {
   fetchStats,
 };
+

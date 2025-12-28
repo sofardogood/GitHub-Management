@@ -1,4 +1,4 @@
----
+﻿---
 name: github-manager
 description: Fetch and manage GitHub repositories (owner + collaborator), issues, PRs, commits, and timeline data.
 ---
@@ -24,3 +24,4 @@ This skill provides scripts for collecting GitHub data using a Personal Access T
 ## Notes
 - Uses REST + GraphQL APIs.
 - Includes rate limit handling and simple file cache.
+

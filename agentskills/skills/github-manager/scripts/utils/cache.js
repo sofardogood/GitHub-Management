@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const cacheDir = path.resolve(__dirname, '..', '..', '.cache');
@@ -60,3 +60,4 @@ module.exports = {
   writeCache,
   withCache,
 };
+

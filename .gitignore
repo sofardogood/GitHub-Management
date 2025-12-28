@@ -10,7 +10,7 @@ dist/
 .env.local
 
 # Local data snapshots
-github-dashboard/data/
+data/
 
 # Logs
 npm-debug.log*

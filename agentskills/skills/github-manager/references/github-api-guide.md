@@ -1,4 +1,4 @@
-# GitHub API Quick Guide
+﻿# GitHub API Quick Guide
 
 Base URLs:
 - REST: https://api.github.com
@@ -19,3 +19,4 @@ GraphQL usage:
 Rate limits:
 - 5,000 requests/hour for authenticated REST
 - Use caching and pagination to reduce calls.
+

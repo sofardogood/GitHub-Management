@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.github.com';
+﻿const API_BASE = 'https://api.github.com';
 const GRAPHQL_URL = 'https://api.github.com/graphql';
 
 const DEFAULT_HEADERS = {
@@ -162,3 +162,4 @@ module.exports = {
   graphqlRequest,
   mapWithConcurrency,
 };
+
