@@ -32,7 +32,7 @@ function toJapaneseError(message) {
   if (message.includes('Git Repository is empty')) {
     return '空のリポジトリが含まれています。';
   }
-  return 'GitHubデータの取得に失敗しました。';
+  return `GitHubデータの取得に失敗しました。 (${message})`;
 }
 
 export function useGitHubData() {
