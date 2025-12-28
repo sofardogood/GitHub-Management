@@ -1,5 +1,5 @@
 ﻿import AppShell from '../components/Layout/AppShell.jsx';
-import ListView from '../components/ListView/ListView.jsx';
+import Dashboard from '../components/Dashboard/Dashboard.jsx';
 import { useGitHubDataContext } from '../contexts/GitHubDataContext.jsx';
 
 export default function HomePage() {
@@ -7,7 +7,7 @@ export default function HomePage() {
 
   return (
     <AppShell>
-      <ListView data={data} loading={loading} mode="compact" />
+      <Dashboard data={data} loading={loading} />
     </AppShell>
   );
 }

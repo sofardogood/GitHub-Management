@@ -13,17 +13,19 @@ export default async function handler(req, res) {
   const force = getForce(req);
 
   try {
-    if (prisma && !force) {
-      try {
-        const stored = await prisma.timelineEvent.findMany({ orderBy: { date: 'desc' } });
-        if (stored.length) {
-          res.status(200).json(stored);
-          return;
+    /*
+        if (prisma && !force) {
+          try {
+            const stored = await prisma.timelineEvent.findMany({ orderBy: { date: 'desc' } });
+            if (stored.length) {
+              res.status(200).json(stored);
+              return;
+            }
+          } catch (error) {
+            console.warn(`DB read failed: ${error.message}`);
+          }
         }
-      } catch (error) {
-        console.warn(`DB read failed: ${error.message}`);
-      }
-    }
+    */
 
     if (!force) {
       const snapshot = readJson('snapshot.json', null);

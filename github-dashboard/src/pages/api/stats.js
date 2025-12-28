@@ -14,24 +14,26 @@ export default async function handler(req, res) {
   const force = getForce(req);
 
   try {
-    if (prisma && !force) {
-      try {
-        const [repos, issues, prs, commits] = await Promise.all([
-          prisma.repo.findMany(),
-          prisma.issue.findMany(),
-          prisma.pullRequest.findMany(),
-          prisma.commit.findMany({ orderBy: { date: 'desc' }, take: 400 }),
-        ]);
-
-        if (repos.length) {
-          const stats = buildStatsFromData(repos, issues, prs, commits);
-          res.status(200).json(stats);
-          return;
+    /*
+        if (prisma && !force) {
+          try {
+            const [repos, issues, prs, commits] = await Promise.all([
+              prisma.repo.findMany(),
+              prisma.issue.findMany(),
+              prisma.pullRequest.findMany(),
+              prisma.commit.findMany({ orderBy: { date: 'desc' }, take: 400 }),
+            ]);
+    
+            if (repos.length) {
+              const stats = buildStatsFromData(repos, issues, prs, commits);
+              res.status(200).json(stats);
+              return;
+            }
+          } catch (error) {
+            console.warn(`DB read failed: ${error.message}`);
+          }
         }
-      } catch (error) {
-        console.warn(`DB read failed: ${error.message}`);
-      }
-    }
+    */
 
     if (!force) {
       const snapshot = readJson('snapshot.json', null);
