@@ -145,3 +145,10 @@ model SyncRun {
   stats      Json?
   error      String?
 }
+
+model CacheEntry {
+  key       String   @id
+  data      String   @db.Text
+  expiresAt DateTime?
+  updatedAt DateTime @updatedAt
+}
