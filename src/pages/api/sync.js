@@ -186,13 +186,12 @@ export default async function handler(req, res) {
         */
 
         // Clear sub-tables to re-insert (Simple Sync)
-        await prisma.$transaction([
-          prisma.issue.deleteMany(),
-          prisma.pullRequest.deleteMany(),
-          prisma.commit.deleteMany(),
-          prisma.timelineEvent.deleteMany(),
-          prisma.repoDependency.deleteMany(),
-        ]);
+        // Using individual deletes for PgBouncer compatibility
+        await prisma.repoDependency.deleteMany();
+        await prisma.timelineEvent.deleteMany();
+        await prisma.commit.deleteMany();
+        await prisma.pullRequest.deleteMany();
+        await prisma.issue.deleteMany();
 
         if (issues.length) {
           await prisma.issue.createMany({
@@ -211,6 +210,7 @@ export default async function handler(req, res) {
               closedAt: toDate(issue.closedAt),
               url: issue.url,
             })),
+            skipDuplicates: true,
           });
         }
 
@@ -232,6 +232,7 @@ export default async function handler(req, res) {
               mergedAt: toDate(pr.mergedAt),
               url: pr.url,
             })),
+            skipDuplicates: true,
           });
         }
 
@@ -246,6 +247,7 @@ export default async function handler(req, res) {
               date: toDate(commit.date),
               url: commit.url,
             })),
+            skipDuplicates: true,
           });
         }
 
@@ -261,6 +263,7 @@ export default async function handler(req, res) {
               date: toDate(event.date),
               url: event.url,
             })),
+            skipDuplicates: true,
           });
         }
 
@@ -300,7 +303,8 @@ export default async function handler(req, res) {
         res.status(200).json({ ok: true, mode: 'db', stats });
         return;
       } catch (error) {
-        console.warn(`DB sync failed: ${error.message}`);
+        console.error(`DB sync failed: ${error.message}`);
+        console.error(error.stack);
         // Fallthrough to file mode
       }
     }

@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Repo {
-  id           Int              @id
+  id           BigInt           @id
   name         String
   fullName     String           @unique
   owner        String
@@ -33,10 +33,10 @@ model Repo {
 }
 
 model Issue {
-  id           Int     @id
+  id           BigInt  @id
   number       Int
   repoFullName String
-  repoId       Int?
+  repoId       BigInt?
   repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
   title        String
   state        String
@@ -50,10 +50,10 @@ model Issue {
 }
 
 model PullRequest {
-  id           Int     @id
+  id           BigInt  @id
   number       Int
   repoFullName String
-  repoId       Int?
+  repoId       BigInt?
   repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
   title        String
   state        String
@@ -70,7 +70,7 @@ model PullRequest {
 model Commit {
   repoFullName String
   sha          String
-  repoId       Int?
+  repoId       BigInt?
   repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
   message      String
   author       Json?
@@ -84,7 +84,7 @@ model TimelineEvent {
   id           String  @id
   type         String
   repoFullName String
-  repoId       Int?
+  repoId       BigInt?
   repo         Repo?   @relation(fields: [repoId], references: [id], onDelete: SetNull)
   title        String
   actor        String
@@ -94,7 +94,7 @@ model TimelineEvent {
 
 model RepoDependency {
   id     Int   @id @default(autoincrement())
-  repoId Int
+  repoId BigInt
   name   String
   source String?
   repo   Repo  @relation(fields: [repoId], references: [id], onDelete: Cascade)
@@ -109,7 +109,7 @@ model Tag {
 }
 
 model RepoTag {
-  repoId Int
+  repoId BigInt
   tagId  Int
   repo   Repo @relation(fields: [repoId], references: [id], onDelete: Cascade)
   tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
