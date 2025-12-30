@@ -182,3 +182,14 @@ export function updateRepoUrl(repo, customUrl) {
     body: { repo, customUrl },
   });
 }
+
+export function getRepoDetails(repo) {
+  return request(`/api/repo-details?repo=${encodeURIComponent(repo)}`);
+}
+
+export function updateRepoDetails(repo, updates) {
+  return request('/api/repo-details', {
+    method: 'PATCH',
+    body: { repo, ...updates },
+  });
+}

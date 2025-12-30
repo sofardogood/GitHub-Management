@@ -1,30 +1,146 @@
 ﻿import { useState } from 'react';
 import { formatRelative } from '../../utils/dateFormatter.js';
-import { updateRepoUrl } from '../../services/githubService.js';
+import { updateRepoDetails } from '../../services/githubService.js';
 
 function RepoCard({ repo }) {
   const [expanded, setExpanded] = useState(false);
   const [customUrl, setCustomUrl] = useState(repo.customUrl || '');
-  const [editingUrl, setEditingUrl] = useState(false);
-  const [savingUrl, setSavingUrl] = useState(false);
+  const [summary, setSummary] = useState(repo.summary || '');
+  const [description, setDescription] = useState(repo.description || '');
+  const [editingField, setEditingField] = useState(null); // 'url', 'summary', 'description'
+  const [saving, setSaving] = useState(false);
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
-  const handleSaveUrl = async () => {
-    setSavingUrl(true);
+  const handleSave = async (field) => {
+    setSaving(true);
     try {
-      await updateRepoUrl(repo.fullName, customUrl);
-      setEditingUrl(false);
+      const updates = {};
+      if (field === 'url') updates.customUrl = customUrl;
+      if (field === 'summary') updates.summary = summary;
+      if (field === 'description') updates.description = description;
+
+      await updateRepoDetails(repo.fullName, updates);
+      setEditingField(null);
     } catch (err) {
-      alert('URLの保存に失敗しました: ' + err.message);
+      alert('保存に失敗しました: ' + err.message);
     } finally {
-      setSavingUrl(false);
+      setSaving(false);
     }
   };
+
+  const handleGenerateSummary = async () => {
+    setLoadingSummary(true);
+    try {
+      const res = await fetch(`/api/summary?repo=${repo.fullName}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSummary(data.summary || '');
+      } else {
+        alert('AI要約の生成に失敗しました');
+      }
+    } catch (err) {
+      alert('エラー: ' + err.message);
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
+  const handleCancel = (field) => {
+    if (field === 'url') setCustomUrl(repo.customUrl || '');
+    if (field === 'summary') setSummary(repo.summary || '');
+    if (field === 'description') setDescription(repo.description || '');
+    setEditingField(null);
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '8px 10px',
+    fontSize: '0.85rem',
+    border: '1px solid #d0d7de',
+    borderRadius: '4px',
+    marginTop: '4px'
+  };
+
+  const buttonStyle = {
+    padding: '6px 12px',
+    fontSize: '0.85rem',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer'
+  };
+
+  const EditableField = ({ label, field, value, setValue, multiline = false }) => (
+    <div style={{ marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+        <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: '#6a737d' }}>{label}</span>
+        {editingField !== field && (
+          <button
+            onClick={() => setEditingField(field)}
+            style={{ ...buttonStyle, padding: '2px 8px', fontSize: '0.75rem', border: '1px solid #d0d7de', backgroundColor: '#fff' }}
+          >
+            編集
+          </button>
+        )}
+        {field === 'summary' && editingField !== field && (
+          <button
+            onClick={handleGenerateSummary}
+            disabled={loadingSummary}
+            style={{ ...buttonStyle, padding: '2px 8px', fontSize: '0.75rem', border: '1px solid #d0d7de', backgroundColor: loadingSummary ? '#f6f8fa' : '#fff' }}
+          >
+            {loadingSummary ? 'AI生成中...' : 'AI生成'}
+          </button>
+        )}
+      </div>
+      {editingField === field ? (
+        <div>
+          {multiline ? (
+            <textarea
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
+            />
+          ) : (
+            <input
+              type={field === 'url' ? 'url' : 'text'}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={field === 'url' ? 'https://example.com' : ''}
+              style={inputStyle}
+            />
+          )}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <button
+              onClick={() => handleSave(field)}
+              disabled={saving}
+              style={{ ...buttonStyle, backgroundColor: '#2da44e', color: '#fff' }}
+            >
+              {saving ? '保存中...' : '保存'}
+            </button>
+            <button
+              onClick={() => handleCancel(field)}
+              style={{ ...buttonStyle, border: '1px solid #d0d7de', backgroundColor: '#fff' }}
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ fontSize: '0.9rem', color: value ? '#24292e' : '#6a737d', whiteSpace: 'pre-wrap' }}>
+          {field === 'url' && value ? (
+            <a href={value} target="_blank" rel="noopener noreferrer" style={{ color: '#0366d6' }}>{value} ↗</a>
+          ) : (
+            value || '未設定'
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="repo-card reveal">
       <div>
         <h4>{repo.fullName}</h4>
-        <p>{repo.description || '説明なし'}</p>
+        <p>{description || '説明なし'}</p>
       </div>
       <div className="repo-meta">
         <span>{repo.language}</span>
@@ -66,79 +182,9 @@ function RepoCard({ repo }) {
           borderRadius: '6px',
           borderTop: '1px solid #d0d7de'
         }}>
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: '#6a737d' }}>プロジェクトURL</span>
-              {!editingUrl && (
-                <button
-                  onClick={() => setEditingUrl(true)}
-                  style={{
-                    padding: '2px 8px',
-                    fontSize: '0.75rem',
-                    border: '1px solid #d0d7de',
-                    borderRadius: '4px',
-                    backgroundColor: '#fff',
-                    cursor: 'pointer'
-                  }}
-                >
-                  編集
-                </button>
-              )}
-            </div>
-            {editingUrl ? (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <input
-                  type="url"
-                  value={customUrl}
-                  onChange={(e) => setCustomUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  style={{
-                    flex: 1,
-                    padding: '6px 10px',
-                    fontSize: '0.85rem',
-                    border: '1px solid #d0d7de',
-                    borderRadius: '4px'
-                  }}
-                />
-                <button
-                  onClick={handleSaveUrl}
-                  disabled={savingUrl}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '0.85rem',
-                    border: 'none',
-                    borderRadius: '4px',
-                    backgroundColor: '#2da44e',
-                    color: '#fff',
-                    cursor: savingUrl ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {savingUrl ? '保存中...' : '保存'}
-                </button>
-                <button
-                  onClick={() => { setEditingUrl(false); setCustomUrl(repo.customUrl || ''); }}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '0.85rem',
-                    border: '1px solid #d0d7de',
-                    borderRadius: '4px',
-                    backgroundColor: '#fff',
-                    cursor: 'pointer'
-                  }}
-                >
-                  キャンセル
-                </button>
-              </div>
-            ) : (
-              customUrl ? (
-                <a href={customUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0366d6', textDecoration: 'none', fontSize: '0.85rem' }}>
-                  {customUrl} ↗
-                </a>
-              ) : (
-                <span style={{ color: '#6a737d', fontSize: '0.85rem' }}>未設定</span>
-              )
-            )}
-          </div>
+          <EditableField label="説明" field="description" value={description} setValue={setDescription} />
+          <EditableField label="AI要約" field="summary" value={summary} setValue={setSummary} multiline />
+          <EditableField label="プロジェクトURL" field="url" value={customUrl} setValue={setCustomUrl} />
         </div>
       )}
     </div>
