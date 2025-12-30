@@ -33,7 +33,12 @@ function RepoCard({ repo }) {
       </div>
       <div className="repo-footer">
         <span>更新 {formatRelative(repo.updatedAt)}</span>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {customUrl && (
+            <a href={customUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#2da44e', textDecoration: 'none', fontSize: '0.85rem' }}>
+              🔗 サイト
+            </a>
+          )}
           <button
             onClick={() => setExpanded(!expanded)}
             style={{
