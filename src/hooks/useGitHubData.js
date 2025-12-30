@@ -3,7 +3,7 @@ import { fetchAll, runSync } from '../services/githubService.js';
 
 const AUTO_SYNC_ENABLED = process.env.NEXT_PUBLIC_AUTO_SYNC !== 'false';
 const AUTO_SYNC_MINUTES = Number(
-  process.env.NEXT_PUBLIC_AUTO_SYNC_INTERVAL_MINUTES || '10'
+  process.env.NEXT_PUBLIC_AUTO_SYNC_INTERVAL_MINUTES || '60' // Changed from 10 to 60 minutes
 );
 const AUTO_SYNC_MS =
   AUTO_SYNC_ENABLED && Number.isFinite(AUTO_SYNC_MINUTES) && AUTO_SYNC_MINUTES > 0
@@ -73,7 +73,8 @@ export function useGitHubData() {
   }, []);
 
   useEffect(() => {
-    load({ force: AUTO_SYNC_ENABLED, silent: false });
+    // On initial load, use cached data (force: false) to avoid API calls
+    load({ force: false, silent: false });
   }, [load]);
 
   useEffect(() => {

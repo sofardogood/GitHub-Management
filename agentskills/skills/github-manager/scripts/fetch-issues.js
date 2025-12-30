@@ -2,7 +2,7 @@
 const { withCache } = require('./utils/cache');
 const { fetchRepos } = require('./fetch-repos');
 
-const DEFAULT_TTL = 5 * 60 * 1000;
+const DEFAULT_TTL = 60 * 60 * 1000; // 60 minutes to reduce API calls
 
 function normalizeIssue(issue, repo) {
   return {

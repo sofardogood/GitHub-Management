@@ -1,7 +1,7 @@
 ﻿const { getUsername, restPaginated } = require('./utils/github-client');
 const { withCache } = require('./utils/cache');
 
-const DEFAULT_TTL = 5 * 60 * 1000;
+const DEFAULT_TTL = 60 * 60 * 1000; // 60 minutes to reduce API calls
 
 function normalizeRepo(repo, username) {
   const ownerLogin = repo.owner && repo.owner.login ? repo.owner.login : 'unknown';

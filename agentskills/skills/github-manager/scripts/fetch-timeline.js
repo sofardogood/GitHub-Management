@@ -3,7 +3,7 @@ const { fetchPullRequests } = require('./fetch-prs');
 const { fetchCommits } = require('./fetch-commits');
 const { withCache } = require('./utils/cache');
 
-const DEFAULT_TTL = 5 * 60 * 1000;
+const DEFAULT_TTL = 60 * 60 * 1000; // 60 minutes to reduce API calls
 
 function addEvent(events, event) {
   if (!event.date) {

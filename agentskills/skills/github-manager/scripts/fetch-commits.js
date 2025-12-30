@@ -2,7 +2,7 @@
 const { withCache } = require('./utils/cache');
 const { fetchRepos } = require('./fetch-repos');
 
-const DEFAULT_TTL = 5 * 60 * 1000;
+const DEFAULT_TTL = 60 * 60 * 1000; // 60 minutes to reduce API calls
 
 function normalizeCommit(commit, repo) {
   const author = commit.author || commit.commit.author;
@@ -13,9 +13,9 @@ function normalizeCommit(commit, repo) {
     message: commit.commit.message.split('\n')[0],
     author: author
       ? {
-          login: author.login || author.name || 'unknown',
-          avatarUrl: author.avatar_url || null,
-        }
+        login: author.login || author.name || 'unknown',
+        avatarUrl: author.avatar_url || null,
+      }
       : { login: 'unknown', avatarUrl: null },
     date: commit.commit.author.date,
     url: commit.html_url,
