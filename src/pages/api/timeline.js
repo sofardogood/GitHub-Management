@@ -38,6 +38,20 @@ export default async function handler(req, res) {
     const timeline = await fetchTimeline({ force });
     res.status(200).json(timeline);
   } catch (error) {
+    // Rate limit error - fallback to DB data
+    if (error.message.includes('Rate limit') || error.message.includes('403')) {
+      if (prisma) {
+        try {
+          const stored = await prisma.timelineEvent.findMany({ orderBy: { date: 'desc' } });
+          if (stored.length) {
+            res.status(200).json(stored);
+            return;
+          }
+        } catch (dbError) {
+          console.warn(`DB fallback failed: ${dbError.message}`);
+        }
+      }
+    }
     res.status(500).json({ error: error.message });
   }
 }

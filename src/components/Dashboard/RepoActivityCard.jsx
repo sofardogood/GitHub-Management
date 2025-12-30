@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { updateRepoUrl } from '../../services/githubService.js';
 
 export default function RepoActivityCard({ repo, activity }) {
   const lastEvent = activity.length > 0 ? activity[0] : null;
   const [expanded, setExpanded] = useState(false);
   const [summary, setSummary] = useState(repo.summary || null);
   const [loading, setLoading] = useState(false);
+  const [customUrl, setCustomUrl] = useState(repo.customUrl || '');
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [savingUrl, setSavingUrl] = useState(false);
 
   const handleExpand = async () => {
     if (expanded) {
@@ -28,6 +32,19 @@ export default function RepoActivityCard({ repo, activity }) {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleSaveUrl = async (e) => {
+    e.stopPropagation();
+    setSavingUrl(true);
+    try {
+      await updateRepoUrl(repo.fullName, customUrl);
+      setEditingUrl(false);
+    } catch (err) {
+      alert('URLの保存に失敗しました: ' + err.message);
+    } finally {
+      setSavingUrl(false);
     }
   };
 
@@ -84,8 +101,85 @@ export default function RepoActivityCard({ repo, activity }) {
           ) : (
             <div style={{ whiteSpace: 'pre-wrap' }}>{summary}</div>
           )}
+
+          {/* Project URL Section */}
+          <div style={{ marginTop: '12px', padding: '10px', backgroundColor: '#f6f8fa', borderRadius: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: '#6a737d' }}>プロジェクトURL</span>
+              {!editingUrl && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setEditingUrl(true); }}
+                  style={{
+                    padding: '2px 8px',
+                    fontSize: '0.75rem',
+                    border: '1px solid #d0d7de',
+                    borderRadius: '4px',
+                    backgroundColor: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  編集
+                </button>
+              )}
+            </div>
+            {editingUrl ? (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="url"
+                  value={customUrl}
+                  onChange={(e) => setCustomUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  style={{
+                    flex: 1,
+                    padding: '6px 10px',
+                    fontSize: '0.85rem',
+                    border: '1px solid #d0d7de',
+                    borderRadius: '4px'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <button
+                  onClick={handleSaveUrl}
+                  disabled={savingUrl}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.85rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: '#2da44e',
+                    color: '#fff',
+                    cursor: savingUrl ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {savingUrl ? '保存中...' : '保存'}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setEditingUrl(false); setCustomUrl(repo.customUrl || ''); }}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.85rem',
+                    border: '1px solid #d0d7de',
+                    borderRadius: '4px',
+                    backgroundColor: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  キャンセル
+                </button>
+              </div>
+            ) : (
+              customUrl ? (
+                <a href={customUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0366d6', textDecoration: 'none', fontSize: '0.85rem' }}>
+                  {customUrl} ↗
+                </a>
+              ) : (
+                <span style={{ color: '#6a737d', fontSize: '0.85rem' }}>未設定</span>
+              )
+            )}
+          </div>
+
           <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-            <a href={repo.htmlUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0366d6', textDecoration: 'none', fontSize: '0.85rem' }}>
+            <a href={repo.url} target="_blank" rel="noopener noreferrer" style={{ color: '#0366d6', textDecoration: 'none', fontSize: '0.85rem' }}>
               GitHubで見る ↗
             </a>
           </div>

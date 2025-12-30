@@ -17,6 +17,7 @@ model Repo {
   visibility   String
   description  String
   summary      String?   @db.Text
+  customUrl    String?          // User-defined project URL (deployed app, docs, etc.)
   language     String
   stars        Int
   forks        Int

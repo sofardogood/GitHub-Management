@@ -172,3 +172,13 @@ export async function fetchAll(options) {
   };
 }
 
+export function getRepoUrl(repo) {
+  return request(`/api/repo-url?repo=${encodeURIComponent(repo)}`);
+}
+
+export function updateRepoUrl(repo, customUrl) {
+  return request('/api/repo-url', {
+    method: 'PATCH',
+    body: { repo, customUrl },
+  });
+}
