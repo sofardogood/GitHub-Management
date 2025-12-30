@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import prisma from '../../lib/prisma.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
 
         if (!readmeRes.ok) {
             if (readmeRes.status === 404) {
-                return res.status(200).json({ summary: 'READMEが見つかりません。' });
+                return res.status(200).json({ summary: 'READMEが見つかりません。', saved: false });
             }
             throw new Error(`GitHub API error: ${readmeRes.status}`);
         }
@@ -48,25 +49,25 @@ export default async function handler(req, res) {
         const response = await result.response;
         const summary = response.text();
 
-        // Save to DB (if prisma available)
-        try {
-            const prisma = require('../../lib/prisma.js');
-            if (prisma) {
-                // We need repo ID. fetchRepos might not return ID in this context easily unless we query DB.
-                // But we have 'repo' string "owner/name".
-                // Let's try to update by fullName
+        // 3. Save to DB
+        let saved = false;
+        if (prisma) {
+            try {
                 await prisma.repo.update({
                     where: { fullName: repo },
                     data: { summary: summary },
                 });
+                saved = true;
+                console.log(`Summary saved for ${repo}`);
+            } catch (e) {
+                console.error('Failed to save summary to DB:', e.message);
             }
-        } catch (e) {
-            console.warn('Failed to save summary to DB:', e.message);
         }
 
-        res.status(200).json({ summary });
+        res.status(200).json({ summary, saved });
     } catch (error) {
         console.error('AI Summary Error:', error);
         res.status(500).json({ error: 'Failed to generate summary', details: error.message });
     }
 }
+

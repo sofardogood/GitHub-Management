@@ -35,6 +35,11 @@ function RepoCard({ repo }) {
       if (res.ok) {
         const data = await res.json();
         setSummary(data.summary || '');
+        if (data.saved) {
+          // Summary was saved to DB
+        } else {
+          alert('AI要約が生成されましたが、DBへの保存に失敗しました。手動で保存してください。');
+        }
       } else {
         alert('AI要約の生成に失敗しました');
       }
