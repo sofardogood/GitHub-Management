@@ -14,6 +14,7 @@ function normalizeRepo(repo, username) {
     isPrivate: repo.private,
     visibility: repo.visibility || (repo.private ? 'private' : 'public'),
     description: repo.description || '',
+    homepage: repo.homepage || '',  // Project URL from GitHub (Vercel deployment, etc.)
     language: repo.language || 'Unknown',
     stars: repo.stargazers_count || 0,
     forks: repo.forks_count || 0,

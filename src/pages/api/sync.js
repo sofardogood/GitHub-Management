@@ -94,6 +94,15 @@ function buildTimeline(issues, prs, commits, limit = 200) {
 
 async function upsertRepos(repos) {
   for (const repo of repos) {
+    // Get existing repo to preserve user-edited customUrl
+    const existing = await prisma.repo.findUnique({
+      where: { id: repo.id },
+      select: { customUrl: true, summary: true }
+    });
+
+    // Use homepage from GitHub if no custom URL is set
+    const customUrl = existing?.customUrl || repo.homepage || null;
+
     await prisma.repo.upsert({
       where: { id: repo.id },
       create: {
@@ -105,6 +114,7 @@ async function upsertRepos(repos) {
         isPrivate: repo.isPrivate,
         visibility: repo.visibility,
         description: repo.description || '',
+        customUrl: customUrl,
         language: repo.language || 'Unknown',
         stars: repo.stars,
         forks: repo.forks,
@@ -120,6 +130,7 @@ async function upsertRepos(repos) {
         isPrivate: repo.isPrivate,
         visibility: repo.visibility,
         description: repo.description || '',
+        customUrl: customUrl,
         language: repo.language || 'Unknown',
         stars: repo.stars,
         forks: repo.forks,
