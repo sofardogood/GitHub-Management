@@ -67,8 +67,8 @@ GitHubの複数リポジトリ、イシュー、プルリクエスト、コミ�
 ### 1. リポジトリのクローン & 依存関係のインストール
 
 ```bash
-git clone <repository-url>
-cd GitHub-Management-standalone
+git clone https://github.com/sofardogood/GitHub-Management.git
+cd GitHub-Management
 npm install
 ```
 
@@ -170,3 +170,85 @@ npm run dev
 ├── 対応ツール一覧.md
 └── 説明_小学生向け.md
 ```
+
+## 構成・主要動作（UMLシーケンス図）
+
+以下は [repos API](src/pages/api/repos.js) の実装に対応する一覧取得フローです。
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as React UI
+    participant API as Next.js API
+    participant DB as Prisma DB
+    participant Snapshot as JSON Snapshot
+    participant GitHub as GitHub API
+    User->>UI: リポジトリ一覧を開く
+    UI->>API: GET /api/repos
+    API->>API: GitHub環境変数を確認
+    alt 設定不足
+        API-->>UI: 設定エラー
+    else 設定済み
+        opt DB利用可能かつforce指定なし
+            API->>DB: 保存済みrepo取得
+        end
+        alt DBに結果あり
+            API-->>UI: DBの一覧
+        else DB結果なし
+            API->>Snapshot: force指定なしの場合に参照
+            alt snapshotに結果あり
+                API-->>UI: snapshotの一覧
+            else snapshotなしまたはforce指定
+                API->>GitHub: fetchRepos
+                GitHub-->>API: repo一覧またはエラー
+                API-->>UI: 結果またはエラー
+            end
+        end
+    end
+```
+
+GitHubのレート制限・403時には、DBが利用可能なら保存済み一覧へのフォールバックを試みます。UI表示だけでは同期成功を意味しません。
+
+## データモデル（主要ER図）
+
+[prisma/schema.prisma](prisma/schema.prisma) が正本です。Issue・PR・CommitのrepoIdは省略可能です。
+
+```mermaid
+erDiagram
+    Repo |o--o{ Issue : contains
+    Repo |o--o{ PullRequest : contains
+    Repo |o--o{ Commit : contains
+    Repo ||--o{ RepoTag : tagged
+    Tag ||--o{ RepoTag : links
+    AutomationRule ||--o{ RuleRun : executes
+    Repo {
+        BigInt id PK
+        string fullName UK
+        string description
+        string summary
+        string customUrl
+    }
+    Issue {
+        BigInt id PK
+        BigInt repoId FK
+    }
+    PullRequest {
+        BigInt id PK
+        BigInt repoId FK
+    }
+    Commit {
+        string repoFullName PK
+        string sha PK
+        BigInt repoId FK
+    }
+```
+
+一覧の説明・要約・customUrlの編集は [repo-details API](src/pages/api/repo-details.js) によりDBを更新します。**GitHub本体のAbout説明文・homepageを書き換える操作ではありません。** DBを利用しない構成では、この編集APIは利用できません。
+
+## 検証範囲・運用注意
+
+- この追記ではソース・README・リンク・GitHub Descriptionを照合しました。機能追加・DB変更・本番設定変更はしていません。
+- 公開ページの応答確認と、GitHub同期・AI・DB保存・自動化の実運用試験は別です。これらの全機能成功を保証する検証は未実施です。
+- 実運用前には、許可したテスト用repoで一覧取得、同期失敗時の表示、AIキー未設定時の動作、DB編集、Dry Runを確認してください。実データの書き換えや自動化実行は対象・権限を確認してから行います。
+- 秘密情報はサーバー環境変数に設定し、README・クライアントコード・ログへ含めません。
+- 作業記録：[docs/work-log/2026-11-09.md](docs/work-log/2026-11-09.md)
