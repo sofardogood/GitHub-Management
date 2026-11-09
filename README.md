@@ -1,5 +1,9 @@
 # GitHub Management System
 
+## デプロイ先
+
+[GitHub Management を開く](https://git-hub-management.vercel.app)
+
 GitHubの複数リポジトリ、イシュー、プルリクエスト、コミットを一元管理・可視化し、AIを活用した検索や要約、タスク管理、運用監視を行うための統合ダッシュボードシステムです。
 
 ---
